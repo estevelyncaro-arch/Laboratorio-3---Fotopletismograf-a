@@ -14,7 +14,8 @@ Para comenzar probamos la primera seción del circuito en la que se encuenta el 
 
 Sin embargo, tras varios intentos, no se logró el funcionamiento correcto del sensor, lo cual se debe a una posible conexión errónea del circuito  o un fallo en el sensor, por lo que posteriormente se implementa un nuevo sensor (MAX1030) el cual se conecta mediante Arduino y se logra de esta manera obtener la señal de fotopletismografía (PPG) quedando conectado como se muestra en la siguiente figura:
 
-<img width="591" height="1280" alt="WhatsApp Image 2026-09-23 at 1 43 01 PM" src="https://github.com/user-attachments/assets/df0b01e4-e3be-4208-8258-9b1eda8b543f" />
+<img width="1280" height="591" alt="WhatsApp Image 2026-09-24 at 6 27 37 PM" src="https://github.com/user-attachments/assets/1c461ef1-a9dc-4845-9c77-373dabfd2f23" />
+
 
 ##
 
