@@ -33,7 +33,16 @@ Los hallazgos validados mediante el CPT se transfieren directamente a la interve
 
 
 ## PARTE B
-SPI
+### SPI
+ El Índice Pletismográfico Quirúrgico (SPI) es una variable numérica estandarizada en una escala de 0 a 100, desarrollada para evaluar de forma objetiva el nivel de estrés quirúrgico y nociceptivo en pacientes bajo anestesia general. Su propósito principal es cuantificar el equilibrio dinámico entre la intensidad de los estímulos nocivos derivantes de la cirugía (nocicepción) y la cobertura que proporcionan los fármacos analgésicos u opioides (antinocicepción), lo que permite detectar la activación del sistema nervioso simpático provocada por la estimulación dolorosa.
+ El modelo se compone del análisis continuo de dos señales cardiovasculares no invasivas extraídas durante la monitorización: la amplitud de la onda de pulso fotopletismográfica (PPG), obtenida mediante el oxímetro de pulso en el dedo, y el intervalo entre latidos cardíacos (HBI), derivado del electrocardiograma o de la onda de pulso. La PPG refleja la vasoconstricción periférica provocada por el tono simpático (disminuyendo ante estímulos dolorosos), mientras que el HBI se acorta a medida que aumenta la frecuencia cardíaca [2].
+
+El modelo matemático final del índice se derivó mediante un ajuste de mínimos cuadrados utilizando como referencia una estimación calculada del Estrés Quirúrgico Total (TSS), la cual correlacionaba la intensidad de estímulos dolorosos reales (como la intubación o la incisión) con las concentraciones de remifentanilo en el sitio. 
+
+La formulación matemática exacta del índice se expresa mediante la siguiente combinación lineal:
+SPI = 100 - (0.7 * PPGA_norm + 0.3*HBI_norm)
+En esta ecuación, el parámetro vascular PPGA_norm recibe una ponderación relativa del 70% (0.7), mientras que el parámetro cronotrópico (HBI_norm) representa el 30% restante (0.3), lo que refleja que la amplitud del pulso es la variable individual con mejor correlación tanto con la severidad del estímulo nocivo como con la concentración del opioide.En la interpretación del índice, un valor cercano a 100 indica un nivel de estrés quirúrgico muy elevado o una analgesia insuficiente, un valor cercano a 0 representa un estado de baja nocicepción o analgesia profunda, y el valor 50 corresponde al nivel medio de estrés [2]. 
+
 ##
 ### Código MATLAB y Resultados obtenidos
 
@@ -73,6 +82,6 @@ Gráfico SPI
 ## REFERENCIAS
 [1] J. M. Carrillo, S. Collado Vázquez y N. Rojo, “El Cold Pressor Test en la investigación del dolor experimental y clínico,” Biociencias, vol. 3, Universidad Alfonso X el Sabio, Madrid, 2005.
 
-[2] 
+[2] M. Huiku et al., “Assessment of surgical stress during general anaesthesia,” British Journal of Anaesthesia, vol. 98, no. 4, pp. 447–455, 2007, doi: 10.1093/bja/aem004.
 
 [3] E. J. Argüello-Prada, “The mountaineer’s method for peak detection in photoplethysmographic signals,” Revista Facultad de Ingeniería, Universidad de Antioquia, no. 90, pp. 42–50, Jan.–Mar. 2019, doi:10.17533/udea.redin.n90a06.
