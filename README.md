@@ -46,7 +46,87 @@ En esta ecuación, el parámetro vascular PPGA_norm recibe una ponderación rela
 ##
 ### Código MATLAB y Resultados obtenidos
 
-Se obtuvieron 2 resultados uno de una integrante del grupo y otros obtenidos con el docente.
+Para este laboratio se realizo un codigo que capturarar y se pudieran evidenciar la grafica de PPG (Fotoplestimografia), para luego utilizar el metodo del alpinista para detectar los picos y los valles para la deteccion de indice plestimografico teniendo un una fase basal, una en donde se hizo la prueba de CPT y en una donde hay una recuperación 
+
+```matlab
+% =========================================================================
+% CAPTURA PPG EN TIEMPO REAL CON TIEMPO CRONOMETRADO Y POST-PROCESAMIENTO
+% =========================================================================
+
+clear; clc; close all;
+
+puertoCOM = 'COM7';      
+baudRate = 115200;     
+
+% Verifica si el puerto COM7 quedó abierto en una ejecución previa y lo libera
+if ~isempty(serialportfind("Port", puertoCOM))
+    delete(serialportfind("Port", puertoCOM));
+end
+
+disp('Conectando a Arduino en COM7...');
+try
+    % Abre la comunicación serial con un tiempo de espera (Timeout) de 1 segundo
+    s = serialport(puertoCOM, baudRate, "Timeout", 1);
+    
+    % Define 'LF' (Line Feed / \n) como el carácter final de cada línea enviada por Arduino
+    configureTerminator(s, "LF");
+    
+    % Limpia cualquier dato antiguo o residual presente en el búfer del puerto
+    flush(s);
+    disp('Conexión exitosa.');
+catch ME
+    error('No se pudo conectar al puerto COM7.');
+end
+```
+
+En la primera parte del código se realiza la lectura de la placa Arduino UNO, definiendo el canal de entrada por el cual se recibe la señal fisiológica. Este paso inicial permite establecer la conexión entre el hardware y el software, garantizando que la señal capturada pueda ser procesada y posteriormente representada para el análisis correspondiente.
+
+```matlab
+import numpy as np
+from scipy.signal import butter, lfilter
+
+# --- 1. Definición de Filtro Digital (Butterworth Bandpass) ---
+def butter_bandpass(lowcut, highcut, fs, order=4):
+    nyq = 0.5 * fs
+    low = lowcut / nyq
+    high = highcut / nyq
+    b, a = butter(order, [low, high], btype='band')
+    return b, a
+
+def filtrar_senal(data, lowcut=0.5, highcut=45.0, fs=500.0):
+    """
+    Aplica un filtro pasa-banda para limpiar ruido de alta frecuencia
+    y la deriva de línea base en señales fisiológicas.
+    """
+    b, a = butter_bandpass(lowcut, highcut, fs, order=2)
+    y = lfilter(b, a, data)
+    return y
+
+# --- 2. Bucle de Procesamiento y Representación ---
+# Supongamos que 'buffer_datos' almacena la ventana de tiempo a graficar
+FS = 500  # Frecuencia de muestreo en Hz
+
+def procesar_y_representar(buffer_datos):
+    if len(buffer_datos) < FS:
+        return  # Esperar a tener suficientes muestras
+    
+    # Conversión de lectura analógica (0 - 1023) a Voltaje (0 - 5V)
+    voltaje = [(muestra * 5.0) / 1023.0 for muestra in buffer_datos]
+    
+    # Filtrado de la señal
+    senal_filtrada = filtrar_senal(voltaje, lowcut=0.5, highcut=45.0, fs=FS)
+    
+    # Representación/Actualización de datos para la gráfica
+    return voltaje, senal_filtrada
+```
+
+En la siguiente sección del código se implementan filtros digitales que permiten eliminar tanto el ruido de alta frecuencia como el componente DC derivado de la línea base, mediante la aplicación de un filtro pasa banda. Además, se incorpora un buffer circular, cuya función es organizar las muestras procesadas dentro de una ventana temporal, lo que facilita la visualización y el análisis continuo de la señal a lo largo de la adquisición de datos.
+
+```matlab
+```
+
+
+En donde se obtuvieron 2 resultados uno de una integrante del grupo y otros obtenidos con el docente.
 
 1. Integrante del grupo
    
