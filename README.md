@@ -257,6 +257,12 @@ Señal PPG:
 
 <img width="441" height="201" alt="image" src="https://github.com/user-attachments/assets/c2710e83-642e-459c-867d-80c856ca278f" />
 
+En el analisis de estas primeras gráficas  la respuesta al estímulo fisiológico (CPT) muestra un incremento significativo del tono simpático: el valor medio del SPI en la fase basal es de 66.05 y aumenta hasta 83.21 durante la maniobra de agua helada (40−80 s), confirmando la activación simpática asociada a vasoconstricción periférica y aceleración del ritmo cardíaco. En la fase de recuperación (80−120 s), el promedio se eleva ligeramente a 85.79, lo que evidencia la ausencia de retorno inmediato a los niveles basales y la persistencia de un efecto residual del estrés.
+
+Para el comportamiento temporal del índice SPI, se observa que en la fase de inicialización (0−15 s) el valor cae bruscamente hasta ~15 puntos, debido al tiempo de estabilización de los filtros digitales y del búfer. Durante el CPT, entre los segundos 40 y 60, se registra una bajada transitoria (~62 puntos), seguida de un ascenso drástico hasta un pico cercano a 97 alrededor del segundo 67, lo que refleja una reacción retardada o una variación hemodinámica progresiva mientras la mano permaneció en el agua fría.
+
+Respecto a la calidad de la señal PPG y la detección de artefactos, se identifican eventos notables: un pico de amplitud superior a 3300 unidades en 𝑡 ≈ 50 s  y otro mayor a 2500 unidades en  𝑡 ≈ 81s.  Estos artefactos coinciden con los momentos de inmersión y retiro de la mano, generando fluctuaciones bruscas de voltaje por movimiento. A pesar de estas variaciones, el algoritmo MMPD mostró robustez, logrando identificar correctamente los picos sistólicos (que se evidencian como los puntos negros) y valles diastólicos (siendo los puntos cian), lo que permitió calcular de manera continua tanto el intervalo inter‑latido (IBI) como la amplitud de pulso (PPGA).
+
 2. Datos obtenidos con el Docente
 
 Señal PPG 
@@ -271,8 +277,15 @@ Gráfico SPI
 
 <img width="622" height="267" alt="image" src="https://github.com/user-attachments/assets/ca883861-3ec4-46a0-9497-08e670619235" />
 
+Para esta segunda grafica el análisis de este conjunto de datos evidencia una marcada respuesta nociceptiva fisiológica durante el Cold Pressor Test (CPT). En la fase basal, el valor promedio del SPI se sitúa en 68.32, mientras que durante el estímulo de agua helada (40−80 s) asciende drásticamente a 86.97, lo que representa un incremento de ~18.65 puntos. Este aumento refleja una respuesta neurovegetativa simpática evidente, manifestada por vasoconstricción periférica (reducción en la amplitud de la onda PPG) y aumento de la frecuencia cardíaca (acortamiento de los intervalos entre picos).
+
+En la fase de recuperación (80−120 s), el SPI se mantiene elevado en 85.88, prácticamente al mismo nivel que durante el estímulo. Esto indica que un periodo de 40 segundos posestímulo no fue suficiente para que el sujeto retornara a sus valores basales, manteniéndose activa la vasoconstricción periférica y la respuesta simpática debido al dolor residual tras retirar la mano del agua helada.
+
+Finalmente, la síntesis comparativa con las gráficas de SPI confirma lo observado en la tabla de promedios: aunque la señal presenta oscilaciones continuas producto del ritmo respiratorio y modulaciones vasculares, el nivel medio global se desplaza de manera sostenida hacia valores altos (>85) desde el inicio del CPT hasta el final de la prueba, consolidando la evidencia de una respuesta simpática persistente.
 
 ## CONCLUSION
+
+En el análisis de las gráficas obtenidas se confirma que el Cold Pressor Test (CPT) genera una respuesta simpática marcada, evidenciada en el incremento del SPI desde valores basales de 66.05 y 68.32 hasta promedios superiores a 83 y 86 durante el estímulo de agua helada, lo que refleja vasoconstricción periférica y aceleración del ritmo cardíaco. En la fase de recuperación, el índice se mantiene elevado (85.79 y 85.88), demostrando que un periodo de 40 segundos no es suficiente para retornar a los niveles fisiológicos iniciales y que persiste un efecto residual del dolor. El comportamiento temporal del SPI muestra una caída inicial atribuida a la estabilización de filtros y búferes, seguida de un ascenso progresivo con picos cercanos a 97, lo que evidencia una dinámica retardada de la respuesta hemodinámica. Además, se identificaron artefactos de movimiento en momentos de inmersión y retiro de la mano, con amplitudes superiores a 2500 y 3300 unidades, que generaron fluctuaciones bruscas en la señal PPG. A pesar de estas variaciones, el algoritmo MMPD demostró robustez al detectar de manera confiable picos sistólicos y valles diastólicos, permitiendo calcular de forma continua el intervalo inter‑latido (IBI) y la amplitud pletismográfica (PPGA). En síntesis, los resultados confirman que el SPI es un indicador sensible y consistente de la actividad simpática, capaz de reflejar tanto la magnitud del estímulo nociceptivo como la persistencia de sus efectos en el tiempo.
 
 ## REFERENCIAS
 [1] J. M. Carrillo, S. Collado Vázquez y N. Rojo, “El Cold Pressor Test en la investigación del dolor experimental y clínico,” Biociencias, vol. 3, Universidad Alfonso X el Sabio, Madrid, 2005.
