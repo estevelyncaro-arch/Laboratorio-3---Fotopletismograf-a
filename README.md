@@ -243,6 +243,7 @@ Para mejorar la calidad de la señal, se emplea un filtrado combinado: un filtro
 
 En donde se obtuvieron 2 resultados uno de una integrante del grupo y otros obtenidos con el docente.
 
+##
 1. Integrante del grupo
    
 Señal PPG:
@@ -262,7 +263,7 @@ En el analisis de estas primeras gráficas  la respuesta al estímulo fisiológi
 Para el comportamiento temporal del índice SPI, se observa que en la fase de inicialización (0−15 s) el valor cae bruscamente hasta ~15 puntos, debido al tiempo de estabilización de los filtros digitales y del búfer. Durante el CPT, entre los segundos 40 y 60, se registra una bajada transitoria (~62 puntos), seguida de un ascenso drástico hasta un pico cercano a 97 alrededor del segundo 67, lo que refleja una reacción retardada o una variación hemodinámica progresiva mientras la mano permaneció en el agua fría.
 
 Respecto a la calidad de la señal PPG y la detección de artefactos, se identifican eventos notables: un pico de amplitud superior a 3300 unidades en 𝑡 ≈ 50 s  y otro mayor a 2500 unidades en  𝑡 ≈ 81s.  Estos artefactos coinciden con los momentos de inmersión y retiro de la mano, generando fluctuaciones bruscas de voltaje por movimiento. A pesar de estas variaciones, el algoritmo MMPD mostró robustez, logrando identificar correctamente los picos sistólicos (que se evidencian como los puntos negros) y valles diastólicos (siendo los puntos cian), lo que permitió calcular de manera continua tanto el intervalo inter‑latido (IBI) como la amplitud de pulso (PPGA).
-
+##
 2. Datos obtenidos con el Docente
 
 Señal PPG 
