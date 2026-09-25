@@ -82,49 +82,164 @@ end
 En la primera parte del código se realiza la lectura de la placa Arduino UNO, definiendo el canal de entrada por el cual se recibe la señal fisiológica. Este paso inicial permite establecer la conexión entre el hardware y el software, garantizando que la señal capturada pueda ser procesada y posteriormente representada para el análisis correspondiente.
 
 ```matlab
-import numpy as np
-from scipy.signal import butter, lfilter
+if isempty(time_log)
+    error('No se recibieron datos del puerto COM7 durante la captura.');
+end
 
-# --- 1. Definición de Filtro Digital (Butterworth Bandpass) ---
-def butter_bandpass(lowcut, highcut, fs, order=4):
-    nyq = 0.5 * fs
-    low = lowcut / nyq
-    high = highcut / nyq
-    b, a = butter(order, [low, high], btype='band')
-    return b, a
+num_upsteps = 0; 
+threshold = 2;
 
-def filtrar_senal(data, lowcut=0.5, highcut=45.0, fs=500.0):
-    """
-    Aplica un filtro pasa-banda para limpiar ruido de alta frecuencia
-    y la deriva de línea base en señales fisiológicas.
-    """
-    b, a = butter_bandpass(lowcut, highcut, fs, order=2)
-    y = lfilter(b, a, data)
-    return y
+time_history = [];
+spi_history  = [];
 
-# --- 2. Bucle de Procesamiento y Representación ---
-# Supongamos que 'buffer_datos' almacena la ventana de tiempo a graficar
-FS = 500  # Frecuencia de muestreo en Hz
+last_peak_time  = 0; 
+last_peak_val   = 0;
+last_valley_val = 0;
 
-def procesar_y_representar(buffer_datos):
-    if len(buffer_datos) < FS:
-        return  # Esperar a tener suficientes muestras
+ibi_current  = 0.8;
+ppga_current = 1000;
+
+peaks_time = []; peaks_val = [];
+valleys_time = []; valleys_val = [];
+proc_buffer = [];
+
+N = length(clean_ppg_log);
+
+for k = 1:N
+    valor_muestra = clean_ppg_log(k);
+    t_sample      = time_log(k);
     
-    # Conversión de lectura analógica (0 - 1023) a Voltaje (0 - 5V)
-    voltaje = [(muestra * 5.0) / 1023.0 for muestra in buffer_datos]
+    proc_buffer(end+1) = valor_muestra;
+    if length(proc_buffer) > (fs * window_time)
+        proc_buffer(1) = [];
+    end
     
-    # Filtrado de la señal
-    senal_filtrada = filtrar_senal(voltaje, lowcut=0.5, highcut=45.0, fs=FS)
+    % Algoritmo MMPD para Picos y Valles
+    if length(proc_buffer) >= 5
+        v0 = proc_buffer(end);   % Muestra actual
+        v1 = proc_buffer(end-1); % Muestra -1
+        v2 = proc_buffer(end-2); % Muestra -2
+        
+        if v0 > v1
+            num_upsteps = num_upsteps + 1;
+        end
+        
+        % Detector de Pico (Período refractario de 0.45 s)
+        if (v1 > v2) && (v0 <= v1) && (num_upsteps >= threshold)
+            if (t_sample - last_peak_time) > 0.45
+                time_peak = t_sample - dt;
+                val_peak = v1;
+                
+                peaks_time(end+1) = time_peak;
+                peaks_val(end+1)  = val_peak;
+                
+                if last_peak_time > 0
+                    ibi_current = time_peak - last_peak_time;
+                end
+                last_peak_time = time_peak;
+                last_peak_val  = val_peak;
+                
+                ppga_current = abs(last_peak_val - last_valley_val);
+                num_upsteps = 0;
+            end
+        end
+        
+        % Detector de Valle
+        if (v1 < v2) && (v0 >= v1)
+            if (t_sample - last_peak_time) > 0.15
+                time_valley = t_sample - dt;
+                val_valley = v1;
+                
+                valleys_time(end+1) = time_valley;
+                valleys_val(end+1)  = val_valley;
+                
+                last_valley_val = val_valley;
+            end
+        end
+    end
     
-    # Representación/Actualización de datos para la gráfica
-    return voltaje, senal_filtrada
+    % CÁLCULO DEL ÍNDICE PLETISEMOGRÁFICO (SPI)
+    hbi_norm  = min(max((ibi_current - 0.4) / (1.2 - 0.4), 0), 1) * 100;
+    ppga_norm = min(max(ppga_current / 25000, 0), 1) * 100;
+    
+    spi_val = 100 - (0.7 * ppga_norm + 0.3 * hbi_norm);
+    % spi_val = min(max(spi_val, 0), 100);
+    
+    time_history(end+1) = t_sample;
+    spi_history(end+1)  = spi_val;
+end
+
+% --- GRÁFICA POST-CAPTURA DE LA SEÑAL CON PICOS Y VALLES ---
+fig_post = figure('Name', 'PPG Completo - Detección de Picos y Valles', 'NumberTitle', 'off', 'Color', 'w');
+ax_post = axes(fig_post);
+hold(ax_post, 'on'); grid(ax_post, 'on');
+
+plot(ax_post, time_log, clean_ppg_log, 'm-', 'LineWidth', 1.2, 'DisplayName', 'PPG');
+plot(ax_post, peaks_time, peaks_val, 'ko', 'MarkerSize', 6, 'MarkerFaceColor', 'k', 'LineStyle', 'none', 'DisplayName', 'Picos');
+plot(ax_post, valleys_time, valleys_val, 'co', 'MarkerSize', 6, 'MarkerFaceColor', 'c', 'LineStyle', 'none', 'DisplayName', 'Valles');
+
+title(ax_post, 'Señal PPG Completa con Picos y Valles Detectados');
+xlabel(ax_post, 'Tiempo (s)'); ylabel(ax_post, 'Amplitud');
+legend(ax_post, 'Location', 'northeast');
+set(ax_post, 'FontSize', 10, 'FontName', 'Times New Roman');
+
+max_t = max(120, max(time_log));
+xlim(ax_post, [0, max_t]);
 ```
 
-En la siguiente sección del código se implementan filtros digitales que permiten eliminar tanto el ruido de alta frecuencia como el componente DC derivado de la línea base, mediante la aplicación de un filtro pasa banda. Además, se incorpora un buffer circular, cuya función es organizar las muestras procesadas dentro de una ventana temporal, lo que facilita la visualización y el análisis continuo de la señal a lo largo de la adquisición de datos.
+Esta sección del script procesa la señal PPG previamente almacenada con el fin de identificar eventos cardíacos ciclo a ciclo y evaluar la respuesta del sistema nervioso autónomo. Para ello se emplea el algoritmo MMPD de detección de picos y valles, que analiza la señal muestra a muestra mediante una ventana móvil de tres puntos consecutivos (𝑣0,𝑣1,𝑣2) para reconocer cambios de pendiente. Los picos sistólicos se determinan cuando la señal pasa de ascendente a descendente, exigiendo al menos dos pasos de subida  (num_upsteps≥2)y un intervalo mínimo de 0.45s entre latidos, lo que evita confundir la onda dicrótica con un falso pico. Los valles diastólicos, por su parte, se identifican en los puntos más bajos de la señal, siempre con una separación de seguridad mayor a 0.15s respecto al pico anterior.
+
+A partir de esta detección se calculan variables fisiológicas relevantes: el intervalo inter‑batido (IBI), que mide el tiempo exacto entre picos consecutivos (Δ𝑡); la amplitud pletismográfica (PPGA), definida como la diferencia de voltaje entre el pico y el valle ∣𝑉𝑝𝑖𝑐𝑜−𝑉𝑣𝑎𝑙𝑙𝑒∣; y el índice pletismográfico (SPI), que normaliza tanto el IBI como la PPGA en una escala de 0 a 100 %, aplicando la fórmula ponderada:
+
+𝑆𝑃𝐼=100−(0.7×𝑃𝑃𝐺𝐴𝑛𝑜𝑟𝑚+0.3×𝐻𝐵𝐼𝑛𝑜𝑟𝑚)
+
+Un aumento en el valor de SPI refleja una mayor actividad simpática, asociada a vasoconstricción o estados de estrés. Finalmente, el script genera una figura de validación que muestra la señal PPG continua y limpia, sobre la cual se superponen marcadores gráficos (círculos negros para picos y cian para valles), permitiendo verificar visualmente la correcta detección de los eventos cardíacos.
 
 ```matlab
+if ~isempty(spi_history)
+    fig2 = figure('Name', 'Evolución del SPI', 'NumberTitle', 'off', 'Color', 'w');
+    ax2 = axes(fig2);
+    
+    spi_clean  = medfilt1(spi_history, 15);
+    spi_smooth = movmean(spi_clean, 50);
+    
+    plot(ax2, time_history, spi_smooth, 'b-', 'LineWidth', 2, 'DisplayName', 'Índice SPI');
+    hold(ax2, 'on'); grid(ax2, 'on');
+    
+    patch(ax2, [40 80 80 40], [0 0 100 100], [1 0.8 0.8], 'FaceAlpha', 0.4, ...
+          'EdgeColor', 'none', 'DisplayName', 'Maniobra CPT (40s - 80s)');
+      
+    xline(ax2, 40, '--r', 'LineWidth', 1.5, 'HandleVisibility', 'off');
+    xline(ax2, 80, '--r', 'LineWidth', 1.5, 'HandleVisibility', 'off');
+    
+    ylim(ax2, [0, 100]); 
+    max_t_spi = max(120, max(time_history));
+    xlim(ax2, [0, max_t_spi]);
+    
+    title(ax2, 'Evolución del Índice Pletismográfico (SPI) en Función del Tiempo');
+    xlabel(ax2, 'Tiempo (s)'); 
+    ylabel(ax2, 'Índice SPI (0 - 100)');
+    legend(ax2, 'Location', 'northeast');
+    set(ax2, 'FontSize', 10, 'FontName', 'Times New Roman');
+    
+    % Promedios impresos
+    idx_basal = time_history <= 40;
+    idx_cpt   = time_history > 40 & time_history <= 80;
+    idx_rec   = time_history > 80;
+    
+    fprintf('\n=========================================\n');
+    fprintf('    VALORES PROMEDIO DEL ÍNDICE SPI      \n');
+    fprintf('=========================================\n');
+    fprintf('1. Fase Basal (0 - 40 s):           %.2f\n', mean(spi_history(idx_basal)));
+    fprintf('2. Durante CPT (40 - 80 s):         %.2f\n', mean(spi_history(idx_cpt)));
+    fprintf('3. Recuperación (80 - 120 s):       %.2f\n', mean(spi_history(idx_rec)));
+    fprintf('=========================================\n');
+end
 ```
 
+En esta sección del script se realiza la segmentación lógica del registro temporal, creando tres máscaras booleanas que dividen la señal en las etapas del experimento: fase basal (reposo, 0−40 s), fase CPT(estímulo térmico/estrés, 40−80 s) y fase de recuperación (post‑estímulo, 80−120 s). Sobre cada intervalo se aplica la función mean() a la variable spi_history, obteniendo los valores promedio del índice pletismográfico y generando una tabla comparativa en la ventana de comandos de MATLAB.
+
+Para mejorar la calidad de la señal, se emplea un filtrado combinado: un filtro de mediana para eliminar ruido aislado y un filtro de media móvil para suavizar la curva. Finalmente, se construye la gráfica de la evolución del SPI como indicador de estrés hemodinámico, destacando visualmente la ventana temporal correspondiente al Cold Pressor Test (40−80s) y mostrando los promedios cuantitativos de las tres fases (basal, CPT y recuperación).
 
 En donde se obtuvieron 2 resultados uno de una integrante del grupo y otros obtenidos con el docente.
 
